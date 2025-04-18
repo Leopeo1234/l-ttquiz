@@ -1130,7 +1130,7 @@
         }
         
         function showTestQuestion() {
-            if (currentTestIndex < testCards.length) {
+            if (currentTestIndex < testCards.length - 1) {
                 testQuestion.textContent = testCards[currentTestIndex].question;
                 testAnswerInput.value = '';
                 testFeedback.style.display = 'none';
