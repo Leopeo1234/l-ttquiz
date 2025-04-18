@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Flashcards</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        /* Navigering */
+        .mode-switcher {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .mode-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        
+        .mode-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+        
+        /* Huvudinnehåll */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        /* Panel-stilar */
+        .panel {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border-top: 4px solid var(--accent);
+        }
+        
+        .panel-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .panel-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent), var(--success));
+        }
+        
+        /* Formulär */
+        .card-form {
+            background: var(--light);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+            outline: none;
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Knappar */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+        }
+        
+        /* Kortlista */
+        .cards-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .card-item {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 4px solid var(--primary);
+            position: relative;
+        }
+        
+        .card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-question {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .card-answer {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+        
+        .delete-card {
+            position: absolute;
+            top: 0.8rem;
+            right: 0.8rem;
+            background: none;
+            color: var(--gray);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .delete-card:hover {
+            color: var(--accent);
+            background: rgba(247, 37, 133, 0.1);
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            grid-column: 1 / -1;
+        }
+        
+        /* Öva-läge */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin: 0 auto 3rem;
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            font-size: 1.5rem;
+            text-align: center;
+            word-break: break-word;
+        }
+        
+        .flashcard-front {
+            background: white;
+            color: var(--dark);
+            border: 1px solid #dee2e6;
+        }
+        
+        .flashcard-back {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+            transform: rotateY(180deg);
+        }
+        
+        .practice-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .progress {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--gray);
+            text-align: center;
+            background: white;
+            padding: 0.8rem;
+            border-radius: var(--border-radius);
+            max-width: 200px;
+            margin: 0 auto;
+            box-shadow: var(--shadow);
+        }
+        
+        .no-cards-message {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .no-cards-message h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsiv design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .cards-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .flashcard-container {
+                height: 350px;
+            }
+            
+            .flashcard-face {
+                font-size: 1.3rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Smart Flashcards</h1>
+            <div class="mode-switcher">
+                <button id="createBtn" class="mode-btn active">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                        <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                    </svg>
+                    Skapa
+                </button>
+                <button id="practiceBtn" class="mode-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/>
+                    </svg>
+                    Öva
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <!-- Skapa-läge -->
+        <section id="createMode">
+            <div class="panel">
+                <h2 class="panel-title">Skapa nya flashcards</h2>
+                
+                <div class="card-form">
+                    <div class="form-group">
+                        <label for="questionInput">Fråga</label>
+                        <input type="text" id="questionInput" class="form-control" placeholder="T.ex. Vad är huvudstaden i Sverige?">
+                    </div>
+                    <div class="form-group">
+                        <label for="answerInput">Svar</label>
+                        <textarea id="answerInput" class="form-control" placeholder="T.ex. Stockholm"></textarea>
+                    </div>
+                    <button id="addCardBtn" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                        </svg>
+                        Lägg till kort
+                    </button>
+                </div>
+                
+                <h2 class="panel-title">Dina flashcards</h2>
+                <div id="cardsContainer" class="cards-list">
+                    <!-- Kort kommer att läggas till här -->
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                    <button id="saveDeckBtn" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                            <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
+                        </svg>
+                        Spara alla kort
+                    </button>
+                    <button id="clearDeckBtn" class="btn btn-danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                        Rensa alla kort
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Öva-läge -->
+        <section id="practiceMode" style="display: none;">
+            <div class="panel">
+                <h2 class="panel-title">Öva med dina flashcards</h2>
+                
+                <div id="practiceContent">
+                    <div class="flashcard-container">
+                        <div class="flashcard" id="flashcard">
+                            <div class="flashcard-face flashcard-front" id="front">
+                                Klicka på "Skapa" för att lägga till flashcards
+                            </div>
+                            <div class="flashcard-face flashcard-back" id="back">
+                                Inga flashcards tillgängliga
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="practice-controls">
+                        <button id="prevCardBtn" class="btn btn-outline">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                                <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                            Föregående
+                        </button>
+                        <button id="nextCardBtn" class="btn btn-primary">
+                            Nästa
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-left: 5px;">
+                                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="progress" id="progress">
+                        0/0
+                    </div>
+                </div>
+                
+                <div id="noCardsMessage" class="no-cards-message" style="display: none;">
+                    <h2>Inga flashcards ännu</h2>
+                    <p style="margin-bottom: 1.5rem;">Du har inte skapat några flashcards än. Gå till "Skapa" för att komma igång!</p>
+                    <button id="goToCreateBtn" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                        </svg>
+                        Skapa flashcards
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // App state
+        let cards = [];
+        let currentCardIndex = 0;
+        let currentMode = 'create';
+        
+        // DOM elements
+        const createBtn = document.getElementById('createBtn');
+        const practiceBtn = document.getElementById('practiceBtn');
+        const createMode = document.getElementById('createMode');
+        const practiceMode = document.getElementById('practiceMode');
+        const questionInput = document.getElementById('questionInput');
+        const answerInput = document.getElementById('answerInput');
+        const addCardBtn = document.getElementById('addCardBtn');
+        const cardsContainer = document.getElementById('cardsContainer');
+        const saveDeckBtn = document.getElementById('saveDeckBtn');
+        const clearDeckBtn = document.getElementById('clearDeckBtn');
+        const flashcard = document.getElementById('flashcard');
+        const front = document.getElementById('front');
+        const back = document.getElementById('back');
+        const prevCardBtn = document.getElementById('prevCardBtn');
+        const nextCardBtn = document.getElementById('nextCardBtn');
+        const progress = document.getElementById('progress');
+        const practiceContent = document.getElementById('practiceContent');
+        const noCardsMessage = document.getElementById('noCardsMessage');
+        const goToCreateBtn = document.getElementById('goToCreateBtn');
+        
+        // Event listeners
+        createBtn.addEventListener('click', () => switchMode('create'));
+        practiceBtn.addEventListener('click', () => switchMode('practice'));
+        addCardBtn.addEventListener('click', addCard);
+        saveDeckBtn.addEventListener('click', saveDeck);
+        clearDeckBtn.addEventListener('click', clearDeck);
+        flashcard.addEventListener('click', flipCard);
+        prevCardBtn.addEventListener('click', showPrevCard);
+        nextCardBtn.addEventListener('click', showNextCard);
+        goToCreateBtn.addEventListener('click', () => switchMode('create'));
+        
+        // Functions
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Update UI
+            if (mode === 'create') {
+                createMode.style.display = 'block';
+                practiceMode.style.display = 'none';
+                createBtn.classList.add('active');
+                practiceBtn.classList.remove('active');
+            } else {
+                createMode.style.display = 'none';
+                practiceMode.style.display = 'block';
+                createBtn.classList.remove('active');
+                practiceBtn.classList.add('active');
+                
+                // Load cards for practice
+                loadCards();
+                updatePracticeView();
+            }
+        }
+        
+        function addCard() {
+            const question = questionInput.value.trim();
+            const answer = answerInput.value.trim();
+            
+            if (!question || !answer) {
+                alert('Du måste fylla i både fråga och svar');
+                return;
+            }
+            
+            const card = { question, answer };
+            cards.push(card);
+            renderCards();
+            
+            // Clear inputs
+            questionInput.value = '';
+            answerInput.value = '';
+            questionInput.focus();
+        }
+        
+        function renderCards() {
+            cardsContainer.innerHTML = '';
+            
+            if (cards.length === 0) {
+                cardsContainer.innerHTML = `
+                    <div class="empty-message">
+                        <p>Inga flashcards ännu. Lägg till dina första kort ovan.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card-item';
+                cardElement.innerHTML = `
+                    <button class="delete-card" data-index="${index}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                        </svg>
+                    </button>
+                    <div class="card-question">${card.question}</div>
+                    <div class="card-answer">${card.answer}</div>
+                `;
+                cardsContainer.appendChild(cardElement);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-card').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.closest('button').getAttribute('data-index'));
+                    deleteCard(index);
+                });
+            });
+        }
+        
+        function deleteCard(index) {
+            if (confirm('Vill du verkligen ta bort detta kort?')) {
+                cards.splice(index, 1);
+                renderCards();
+            }
+        }
+        
+        function saveDeck() {
+            if (cards.length === 0) {
+                alert('Inga kort att spara');
+                return;
+            }
+            
+            localStorage.setItem('flashcards', JSON.stringify(cards));
+            alert(`Sparade ${cards.length} kort!`);
+        }
+        
+        function loadCards() {
+            const savedCards = localStorage.getItem('flashcards');
+            if (savedCards) {
+                cards = JSON.parse(savedCards);
+            } else {
+                cards = [];
+            }
+        }
+        
+        function clearDeck() {
+            if (cards.length === 0 || confirm('Vill du verkligen radera alla flashcards?')) {
+                cards = [];
+                localStorage.removeItem('flashcards');
+                renderCards();
+                
+                // Update practice view if in practice mode
+                if (currentMode === 'practice') {
+                    updatePracticeView();
+                }
+            }
+        }
+        
+        function updatePracticeView() {
+            if (cards.length === 0) {
+                practiceContent.style.display = 'none';
+                noCardsMessage.style.display = 'block';
+                return;
+            }
+            
+            practiceContent.style.display = 'block';
+            noCardsMessage.style.display = 'none';
+            
+            showCard(currentCardIndex);
+        }
+        
+        function showCard(index) {
+            if (cards.length === 0) return;
+            
+            // Ensure index is within bounds
+            if (index < 0) index = 0;
+            if (index >= cards.length) index = cards.length - 1;
+            
+            currentCardIndex = index;
+            front.textContent = cards[index].question;
+            back.textContent = cards[index].answer;
+            
+            // Reset card orientation
+            if (flashcard.classList.contains('flipped')) {
+                flashcard.classList.remove('flipped');
+            }
+            
+            // Update navigation buttons
+            prevCardBtn.disabled = index === 0;
+            nextCardBtn.disabled = index === cards.length - 1;
+            
+            // Update progress
+            progress.textContent = `${index + 1}/${cards.length}`;
+        }
+        
+        function flipCard() {
+            if (cards.length === 0) return;
+            flashcard.classList.toggle('flipped');
+        }
+        
+        function showPrevCard() {
+            if (currentCardIndex > 0) {
+                showCard(currentCardIndex - 1);
+            }
+        }
+        
+        function showNextCard() {
+            if (currentCardIndex < cards.length - 1) {
+                showCard(currentCardIndex + 1);
+            }
+        }
+        
+        // Initialize
+        switchMode('create');
+        loadCards();
+        renderCards();
+    </script>
+</body>
+</html>
