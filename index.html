@@ -1600,5 +1600,20 @@
         switchMode('create');
         checkForSharedDeck();
     </script>
+    <div class="modal-overlay" id="loadModal">
+    <div class="modal">
+        <button class="close-modal" id="closeLoadModal">&times;</button>
+        <h2 class="panel-title">Ladda delad kortlek</h2>
+        
+        <div class="form-group">
+            <label for="deckIdInputLoad">Klistra in kortleks-ID:</label>
+            <input type="text" id="deckIdInputLoad" class="form-control" placeholder="t.ex. default-abc123">
+        </div>
+        
+        <button id="confirmLoadBtn" class="btn btn-primary">
+            Ladda
+        </button>
+    </div>
+</div>
 </body>
 </html>
