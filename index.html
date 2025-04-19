@@ -1604,67 +1604,64 @@ const deckIdInputLoad = document.getElementById('deckIdInputLoad');
 const confirmLoadBtn = document.getElementById('confirmLoadBtn');
 const loadError = document.getElementById('loadError');
 
-// Visa modal när knappen klickas
-loadDeckBtn.addEventListener('click', () => {
-    loadModal.classList.add('active');
-    deckIdInputLoad.value = ''; // Rensa fältet
-    loadError.style.display = 'none'; // Dölj felmeddelande
-    deckIdInputLoad.focus();
-});
+// Kontrollera att alla element finns
+if (!loadDeckBtn || !loadModal || !closeLoadModal || !deckIdInputLoad || !confirmLoadBtn || !loadError) {
+    console.error("Vissa element för ladda-kortlek saknas!");
+} else {
+    // Visa modal när knappen klickas
+    loadDeckBtn.addEventListener('click', function() {
+        console.log("Ladda-knappen klickad"); // Debug
+        loadModal.classList.add('active');
+        deckIdInputLoad.value = '';
+        loadError.style.display = 'none';
+        deckIdInputLoad.focus();
+    });
 
-// Stäng modal
-closeLoadModal.addEventListener('click', () => {
-    loadModal.classList.remove('active');
-});
+    // Stäng modal
+    closeLoadModal.addEventListener('click', function() {
+        loadModal.classList.remove('active');
+    });
 
-// Hantera inladdning av kortlek
-confirmLoadBtn.addEventListener('click', () => {
-    const deckId = deckIdInputLoad.value.trim();
-    
-    if (!deckId) {
-        showError('Ange ett kortleks-ID');
-        return;
-    }
-
-    // Kontrollera om kortleken finns
-    const savedDecks = JSON.parse(localStorage.getItem('flashcardDecks')) || {};
-    let deckFound = false;
-
-    for (const [key, deck] of Object.entries(savedDecks)) {
-        if (deck.id === deckId) {
-            // Skapa en ny kopia av kortleken
-            const newDeckId = 'shared-' + Date.now();
-            decks[newDeckId] = {
-                ...deck,
-                name: `${deck.name} (Delad)`,
-                id: deck.id // Behåll original-ID för framtida delning
-            };
-            
-            // Spara uppdaterade kortlekar
-            localStorage.setItem('flashcardDecks', JSON.stringify(decks));
-            
-            // Uppdatera gränssnittet
-            updateDeckSelectors();
-            deckSelect.value = newDeckId;
-            switchDeck();
-            
-            showToast(`Kortlek "${deck.name}" har laddats!`);
-            deckFound = true;
-            loadModal.classList.remove('active');
-            break;
+    // Hantera inladdning
+    confirmLoadBtn.addEventListener('click', function() {
+        const deckId = deckIdInputLoad.value.trim();
+        console.log("Försöker ladda kortlek med ID:", deckId); // Debug
+        
+        if (!deckId) {
+            loadError.textContent = 'Ange ett kortleks-ID';
+            loadError.style.display = 'block';
+            return;
         }
-    }
 
-    if (!deckFound) {
-        showError('Kortleken hittades inte. Kontrollera ID:t.');
-    }
-});
+        const savedDecks = JSON.parse(localStorage.getItem('flashcardDecks') || {};
+        let deckFound = false;
 
-// Visa felmeddelande
-function showError(message) {
-    loadError.textContent = message;
-    loadError.style.display = 'block';
-    deckIdInputLoad.focus();
+        for (const [key, deck] of Object.entries(savedDecks)) {
+            if (deck.id === deckId) {
+                // Skapa en kopia
+                const newDeckId = 'shared-' + Date.now();
+                decks[newDeckId] = {
+                    ...deck,
+                    name: `${deck.name} (Delad)`
+                };
+                
+                // Uppdatera gränssnittet
+                updateDeckSelectors();
+                deckSelect.value = newDeckId;
+                switchDeck();
+                
+                showToast(`Kortlek "${deck.name}" laddad!`);
+                deckFound = true;
+                loadModal.classList.remove('active');
+                break;
+            }
+        }
+
+        if (!deckFound) {
+            loadError.textContent = 'Kortleken hittades inte. Kontrollera ID:t.';
+            loadError.style.display = 'block';
+        }
+    });
 }
         // Initialize
         loadDecks();
