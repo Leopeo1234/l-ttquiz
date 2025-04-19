@@ -1594,7 +1594,58 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
-        
+
+        // === Ladda kortlek-funktionalitet === //
+const loadDeckBtn = document.getElementById('loadDeckBtn');
+const loadModal = document.getElementById('loadModal');
+const closeLoadModal = document.getElementById('closeLoadModal');
+const deckIdInputLoad = document.getElementById('deckIdInputLoad');
+const confirmLoadBtn = document.getElementById('confirmLoadBtn');
+
+// Öppna/stäng modal
+loadDeckBtn.addEventListener('click', () => {
+    loadModal.classList.add('active');
+    deckIdInputLoad.focus();
+});
+
+closeLoadModal.addEventListener('click', () => {
+    loadModal.classList.remove('active');
+});
+
+// Hantera inladdning
+confirmLoadBtn.addEventListener('click', () => {
+    const deckId = deckIdInputLoad.value.trim();
+    
+    if (!deckId) {
+        showToast('Ange ett kortleks-ID');
+        return;
+    }
+
+    let deckFound = false;
+    for (const [key, deck] of Object.entries(decks)) {
+        if (deck.id === deckId) {
+            // Skapa en kopia
+            const newDeckId = 'shared-' + Date.now();
+            decks[newDeckId] = {
+                ...deck,
+                name: `${deck.name} (Delad)`
+            };
+            
+            updateDeckSelectors();
+            deckSelect.value = newDeckId;
+            switchDeck();
+            
+            showToast(`Kortlek "${deck.name}" laddad`);
+            deckFound = true;
+            loadModal.classList.remove('active');
+            break;
+        }
+    }
+
+    if (!deckFound) {
+        showToast('Kortlek ej funnen. Kontrollera ID.');
+    }
+});
         // Initialize
         loadDecks();
         switchMode('create');
